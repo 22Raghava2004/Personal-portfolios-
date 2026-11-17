@@ -133,7 +133,18 @@ function App() {
         <div className="hero-grid">
           <div className="hero-copy">
             <motion.div className="eyebrow" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}><span className="status-dot" />{mode === 'creative' ? 'CREATIVE PORTFOLIO' : 'C:\\PORTFOLIO\\DEVELOPER'}</motion.div>
-            <motion.h1 key={mode} initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .55 }}>{mode === 'creative' ? <>Ideas into<br /><span className="gradient-text">visual stories.</span></> : <>Code into<br /><span className="gradient-text">real experiences.</span>}</motion.h1>
+<motion.h1
+  key={mode}
+    initial={{ opacity: 0, y: 35 }}
+      animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: .55 }}
+        >
+          {mode === 'creative' ? 'Ideas into' : 'Code into'}
+            <br />
+              <span className="gradient-text">
+                  {mode === 'creative' ? 'visual stories.' : 'real experiences.'}
+                    </span>
+                    </motion.h1>            <motion.h1 key={mode} initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .55 }}>{mode === 'creative' ? <>Ideas into<br /><span className="gradient-text">visual stories.</span></> : <>Code into<br /><span className="gradient-text">real experiences.</span>}</motion.h1>
             <motion.p key={`intro-${mode}`} className="hero-intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .2 }}>{mode === 'creative' ? "I'm Raghava — an animator and designer shaping ideas into expressive visuals, memorable moments and digital experiences." : "I'm Raghava — a software developer exploring Python, backend systems, AI applications and interactive web experiences."}</motion.p>
             <div className="hero-meta"><span>{site?.location || 'INDIA'}</span><span className="meta-line" /><span>{mode === 'creative' ? 'DESIGN · ANIMATION · IDEAS' : 'PYTHON · AI · DEVELOPMENT'}</span></div>
           </div>
