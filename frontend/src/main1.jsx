@@ -1,7 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Environment, MeshTransmissionMaterial, Stars } from '@react-three/drei';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, ArrowUpRight, Instagram, Linkedin, Github, Menu, X, Sparkles } from 'lucide-react';
 import './style.css';
@@ -14,32 +12,17 @@ async function apiGet(path) {
   return response.json();
 }
 
-function Spiral() {
-  const group = useRef();
-  const rings = useMemo(() => Array.from({ length: 8 }, (_, i) => ({ y: (i - 3.5) * 0.34, scale: 0.48 + i * 0.105, rotation: i * 0.43 })), []);
-  useFrame((state, delta) => {
-    if (group.current) {
-      group.current.rotation.y += delta * 0.18;
-      group.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.22) * 0.12;
-    }
-  });
-  return <group ref={group}>
-    {rings.map((r, i) => <mesh key={i} position={[0, r.y, 0]} rotation={[Math.PI / 2.7, r.rotation, i * 0.13]} scale={r.scale}>
-      <torusGeometry args={[1, 0.055, 24, 120]} />
-      <MeshTransmissionMaterial backside samples={4} thickness={0.55} roughness={0.12} transmission={0.98} ior={1.25} chromaticAberration={0.12} color={i % 2 ? '#b8a4ff' : '#83e9ff'} />
-    </mesh>)}
-    <mesh><icosahedronGeometry args={[0.28, 2]} /><meshPhysicalMaterial color="#c8b7ff" roughness={0.12} metalness={0.15} transmission={0.7} thickness={1} /></mesh>
-    <pointLight position={[2, 2, 3]} intensity={18} color="#9b72ff" />
-    <pointLight position={[-2, -1, -2]} intensity={12} color="#4bdcff" />
-  </group>;
-}
-
-function SkillScene() {
-  return <Canvas camera={{ position: [0, 0, 5.2], fov: 42 }} dpr={[1, 1.6]}>
-    <ambientLight intensity={0.7} /><Environment preset="city" />
-    <Float speed={1.2} rotationIntensity={0.18} floatIntensity={0.35}><Spiral /></Float>
-    <Stars radius={9} depth={3} count={220} factor={2} fade speed={0.3} />
-  </Canvas>;
+function SkillArt2D() {
+  return <div className="skill-art-2d" aria-hidden="true">
+    <div className="skill-art-halo" />
+    <div className="skill-art-orbit orbit-a" />
+    <div className="skill-art-orbit orbit-b" />
+    <div className="skill-art-orbit orbit-c" />
+    <div className="skill-art-core" />
+    <span className="skill-art-spark spark-a">✦</span>
+    <span className="skill-art-spark spark-b">✧</span>
+    <span className="skill-art-spark spark-c">·</span>
+  </div>;
 }
 
 function Header({ active, setActive, mode, setMode, night, setNight }) {
@@ -121,7 +104,7 @@ function App() {
 
   const categories = [...new Set(projects.map(project => project.category).filter(Boolean))];
   const shownProjects = projects.filter(project => filter === 'All' || project.category === filter);
-  const heroVideo = night ? site?.night_video_url : site?.day_video_url;
+  const heroVideo = night ? '/videos/night.mp4' : '/videos/day.mp4';
   const contactEmail = site?.contact_email;
 
   return <div className={`site-shell ${mode === 'developer' ? 'developer-mode' : 'creative-mode'} ${mode === 'developer' && night ? 'dev-night' : 'dev-day'}`}>
@@ -129,23 +112,23 @@ function App() {
     <Header active={active} setActive={setActive} mode={mode} setMode={next => { setMode(next); if (next === 'creative') setNight(false); }} night={night} setNight={setNight} />
     <main>
       <section className="hero section-wrap" id="home">
-        {mode === 'developer' && heroVideo && <video className="developer-hero-video" key={heroVideo} src={heroVideo} autoPlay muted loop playsInline />}
+        {mode === 'developer' && <video className="developer-hero-video" key={heroVideo} src={heroVideo} autoPlay muted loop playsInline preload="auto" aria-hidden="true" />}
         <div className="hero-grid">
           <div className="hero-copy">
             <motion.div className="eyebrow" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .2 }}><span className="status-dot" />{mode === 'creative' ? 'CREATIVE PORTFOLIO' : 'C:\\PORTFOLIO\\DEVELOPER'}</motion.div>
-            <motion.h1 key={mode} initial={{ opacity: 0, y: 35 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .55 }}>{mode === 'creative' ? <>Ideas into<br /><span className="gradient-text">visual stories.</span></> : <>Code into<br /><span className="gradient-text">real experiences.</span>}</motion.h1>
-<motion.h1
-  key={mode}
-    initial={{ opacity: 0, y: 35 }}
-      animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: .55 }}
-        >
-          {mode === 'creative' ? 'Ideas into' : 'Code into'}
-            <br />
+            <motion.h1
+              key={mode}
+              initial={{ opacity: 0, y: 35 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55 }}
+            >
+              {mode === 'creative' ? 'Ideas into' : 'Code into'}
+              <br />
               <span className="gradient-text">
-                  {mode === 'creative' ? 'visual stories.' : 'real experiences.'}
-                    </span>
-                    </motion.h1>            <motion.p key={`intro-${mode}`} className="hero-intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .2 }}>{mode === 'creative' ? "I'm Raghava — an animator and designer shaping ideas into expressive visuals, memorable moments and digital experiences." : "I'm Raghava — a software developer exploring Python, backend systems, AI applications and interactive web experiences."}</motion.p>
+                {mode === 'creative' ? 'visual stories.' : 'real experiences.'}
+              </span>
+            </motion.h1>
+            <motion.p key={`intro-${mode}`} className="hero-intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .2 }}>{mode === 'creative' ? "I'm Raghava — an animator and designer shaping ideas into expressive visuals, memorable moments and digital experiences." : "I'm Raghava — a software developer exploring Python, backend systems, AI applications and interactive web experiences."}</motion.p>
             <div className="hero-meta"><span>{site?.location || 'INDIA'}</span><span className="meta-line" /><span>{mode === 'creative' ? 'DESIGN · ANIMATION · IDEAS' : 'PYTHON · AI · DEVELOPMENT'}</span></div>
           </div>
           {mode === 'creative' ? <motion.div className="hero-art" initial={{ opacity: 0, scale: .84 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, delay: .35 }}>
@@ -183,7 +166,7 @@ function App() {
       <section className="skills-section section-wrap" id="skills">
         <div className="section-heading"><div><div className="eyebrow">03 / {mode === 'creative' ? 'CREATIVE TOOLKIT' : 'C:\\PORTFOLIO\\SKILLS'}</div><h2>Skills in<br /><span className="muted-heading">motion.</span></h2></div></div>
         <div className="skills-layout">
-          <div className="skill-visual"><div className="visual-glow" />{mode === 'creative' && <SkillScene />}<div className="visual-caption">{mode === 'creative' ? 'INTERACTIVE SKILL UNIVERSE' : 'TECHNICAL TOOLKIT'} <span>✳</span></div></div>
+          <div className="skill-visual"><div className="visual-glow" />{mode === 'creative' && <SkillArt2D />}<div className="visual-caption">{mode === 'creative' ? 'INTERACTIVE SKILL UNIVERSE' : 'TECHNICAL TOOLKIT'} <span>✳</span></div></div>
           <div className="skill-panel"><div className="panel-top"><span>{mode === 'creative' ? 'CREATIVE DNA' : 'DEVELOPER STACK'}</span><span>{String(skills.length).padStart(2, '0')} ITEMS</span></div>
             {skills.length > 0 && <><div className="skill-list">{skills.map((skill, index) => <button key={skill.id} onClick={() => setSelectedSkill(index)} className={selectedSkill === index ? 'skill-row selected' : 'skill-row'}>
               <span className="skill-index">{String(index + 1).padStart(2, '0')}</span><span className="skill-name">{skill.name}</span>{skill.proficiency != null && <><span className="skill-level">{skill.proficiency}%</span><span className="skill-track"><i style={{ width: `${skill.proficiency}%` }} /></span></>}
