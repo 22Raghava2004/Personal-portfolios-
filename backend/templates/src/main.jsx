@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import "./style.css";
 
-const API = "/api";
+const API = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
 const STATIC_MEDIA = import.meta.env.DEV ? "" : "/static";
 
 async function apiGet(path) {
