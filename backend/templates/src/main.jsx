@@ -183,14 +183,12 @@ function App() {
   const [about, setAbout] = useState(null);
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [filter, setFilter] = useState("All");
   const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    setLoadError("");
     Promise.allSettled([
       apiGet(`/projects/?mode=${mode}`),
       apiGet(`/skills/?mode=${mode}`),
@@ -211,9 +209,6 @@ function App() {
       results.forEach((result, index) => {
         if (result.status === "rejected") console.error(`Portfolio API request ${index + 1} failed:`, result.reason);
       });
-      setLoadError(results.some(result => result.status === "rejected")
-        ? "Some portfolio content could not be loaded. Check the browser console for details."
-        : "");
       setLoading(false);
     });
     return () => { alive = false; };
@@ -355,7 +350,6 @@ function App() {
           </motion.div>
         </motion.div>}
       </AnimatePresence>
-      {loadError && <div className="api-toast" role="status">{loadError}</div>}
     </div>
   );
 }
