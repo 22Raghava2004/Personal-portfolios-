@@ -158,7 +158,8 @@ function ProjectCard({ project, index, onOpen }) {
       onClick={() => onOpen(project)}>
       <div className="project-media">
         {project.media_kind === "video" && project.media_url
-          ? <video src={project.media_url} muted loop playsInline controls preload="metadata"/>
+          ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"
+              onClick={event => event.stopPropagation()}/>
           : project.media_url ? <img src={project.media_url} alt={project.title} loading="lazy"/> :
           <div className="media-placeholder"><Sparkles/></div>}
       </div>
@@ -333,6 +334,11 @@ function App() {
           <motion.div className="project-modal" initial={{y:18,opacity:0}} animate={{y:0,opacity:1}} exit={{y:12,opacity:0}}
             onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedProject(null)}><X/></button>
+            {selectedProject.media_url && <div className="project-modal-media">
+              {selectedProject.media_kind === "video"
+                ? <video src={selectedProject.media_url} controls autoPlay muted loop playsInline/>
+                : <img src={selectedProject.media_url} alt={selectedProject.title}/>}
+            </div>}
             <span className="eyebrow">{selectedProject.category}</span>
             <h2>{selectedProject.title}</h2><p>{selectedProject.description}</p>
             {selectedProject.project_url && <a href={selectedProject.project_url} target="_blank" rel="noreferrer">View project <ArrowUpRight size={16}/></a>}
