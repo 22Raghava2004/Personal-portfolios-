@@ -8,7 +8,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ("id", "mode", "title", "category", "year", "description", "image", "video", "drive_video_url", "media_url", "media_kind", "project_url", "sort_order")
+        fields = ("id", "mode", "title", "year", "description", "image", "video", "drive_video_url", "media_url", "media_kind", "project_url", "sort_order")
 
     def get_media_url(self, obj):
         if obj.mode == Project.CREATIVE and obj.drive_video_url:

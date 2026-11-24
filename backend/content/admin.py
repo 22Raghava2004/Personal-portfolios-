@@ -4,8 +4,8 @@ from .models import Project, Skill, Post, AboutContent, SiteProfile
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ("title", "mode", "category", "sort_order", "is_published")
-    list_filter = ("mode", "is_published", "category")
+    list_display = ("title", "mode", "sort_order", "is_published")
+    list_filter = ("mode", "is_published")
     search_fields = ("title", "description")
     ordering = ("mode", "sort_order", "-created_at")
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -166,7 +166,7 @@ function ProjectCard({ project, index, onOpen }) {
           <div className="media-placeholder"><Sparkles/></div>}
       </div>
       <div className="project-info">
-        <div><span className="eyebrow">{project.category || "PROJECT"}</span><h3>{project.title}</h3></div>
+        <div><h3>{project.title}</h3></div>
         <span className="project-year">{project.year || ""}<ArrowUpRight size={17}/></span>
       </div>
     </motion.article>
@@ -183,7 +183,6 @@ function App() {
   const [about, setAbout] = useState(null);
   const [site, setSite] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("All");
   const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
@@ -229,15 +228,11 @@ function App() {
     return () => observer.disconnect();
   }, []);
 
-  const categories = useMemo(() =>
-    [...new Set(projects.map(p => p.category).filter(Boolean))], [projects]);
-  const visibleProjects = projects.filter(p => filter === "All" || p.category === filter);
-
   return (
     <div className={`portfolio-page ${mode} ${mode === "developer" ? (night ? "dev-night" : "dev-day") : ""}`}>
       <div className="portfolio-shell">
         <Header mode={mode} setMode={next => {
-          setMode(next); setFilter("All"); if (next === "creative") setNight(false);
+          setMode(next); if (next === "creative") setNight(false);
         }} night={night} setNight={setNight} active={active} setActive={setActive}/>
         <main>
           <Hero mode={mode} night={night} site={site}/>
@@ -247,16 +242,11 @@ function App() {
               <span className="eyebrow">01 / {mode === "creative" ? "SELECTED WORK" : "DEVELOPER PROJECTS"}</span>
               <h2>{mode === "creative" ? <>Selected<br/><span>creative work.</span></> : <>Projects built<br/><span>with code.</span></>}</h2>
             </div>
-            {categories.length > 0 && <div className="category-row">
-              {["All", ...categories].map(category =>
-                <button key={category} className={filter === category ? "category-chip active" : "category-chip"}
-                  onClick={() => setFilter(category)}>{category}</button>)}
-            </div>}
             {loading && <p className="empty-state">Loading projects…</p>}
-            {!loading && !visibleProjects.length && <p className="empty-state">Projects will appear here soon.</p>}
+            {!loading && !projects.length && <p className="empty-state">Projects will appear here soon.</p>}
             <motion.div layout className="project-grid">
               <AnimatePresence mode="popLayout">
-                {visibleProjects.map((project, index) =>
+                {projects.map((project, index) =>
                   <ProjectCard key={project.id} project={project} index={index} onOpen={setSelectedProject}/>)}
               </AnimatePresence>
             </motion.div>
@@ -344,7 +334,6 @@ function App() {
                   ? <video src={selectedProject.media_url} controls autoPlay muted loop playsInline/>
                   : <img src={selectedProject.media_url} alt={selectedProject.title}/>}
             </div>}
-            <span className="eyebrow">{selectedProject.category}</span>
             <h2>{selectedProject.title}</h2><p>{selectedProject.description}</p>
             {selectedProject.project_url && <a href={selectedProject.project_url} target="_blank" rel="noreferrer">View project <ArrowUpRight size={16}/></a>}
           </motion.div>

@@ -20,7 +20,6 @@ class Project(PublishedModel):
     MODE_CHOICES = [(CREATIVE, "Creative"), (DEVELOPER, "Developer")]
     mode = models.CharField(max_length=12, choices=MODE_CHOICES)
     title = models.CharField(max_length=160)
-    category = models.CharField(max_length=80, blank=True)
     year = models.CharField(max_length=12, blank=True)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="projects/images/", blank=True)

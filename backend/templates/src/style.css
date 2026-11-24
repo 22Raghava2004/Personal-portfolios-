@@ -72,9 +72,6 @@ a { color: inherit; text-decoration: none; }
 .eyebrow { color: var(--purple); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; }
 .section-title h2, .contact-section h2 { font-family: 'Space Grotesk',sans-serif; font-size: clamp(38px,6vw,68px); letter-spacing: -.06em; line-height: .98; margin: 16px 0 0; color: var(--ink); }
 .section-title h2 span, .contact-section h2 span { color: #8a849b; }
-.category-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
-.category-chip { border: 1px solid var(--line); color: var(--muted); background: transparent; border-radius: 999px; padding: 9px 15px; transition: all .25s ease; }
-.category-chip.active, .category-chip:hover { color: white; border-color: var(--purple); background: var(--purple); }
 .project-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; }
 .project-card { min-width: 0; padding: 12px; border-radius: 20px; background: var(--paper); border: 1px solid var(--line); cursor: pointer; transition: transform .3s ease, box-shadow .3s ease; }
 .project-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(55,31,93,.09); }
