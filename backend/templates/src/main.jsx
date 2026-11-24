@@ -8,6 +8,7 @@ import {
 import "./style.css";
 
 const API = "/api";
+const STATIC_MEDIA = import.meta.env.DEV ? "" : "/static";
 
 async function apiGet(path) {
   const response = await fetch(`${API}${path}`, {
@@ -84,7 +85,7 @@ function HeroArtwork({ mode, night }) {
         <video
           className="hero-video"
           key={night ? "night-video" : "day-video"}
-          src={night ? "/videos/night.mp4" : "/videos/day.mp4"}
+          src={`${STATIC_MEDIA}${night ? "/videos/night.mp4" : "/videos/day.mp4"}`}
           autoPlay muted loop playsInline preload="auto"
           onError={(e) => { e.currentTarget.style.display = "none"; }}
         />

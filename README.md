@@ -4,8 +4,9 @@ React/Vite frontend with Django REST Framework backend.
 
 ## Repository layout
 
-- `frontend/src/` — React application and styles
-- `frontend/public/videos/` — day/night background videos
+- `backend/templates/src/` — React application and styles
+- `backend/templates/public/videos/` — day/night background videos
+- `backend/templates/dist/` — generated frontend build served by Django
 - `backend/config/` — Django project settings and URL/WSGI configuration
 - `backend/content/` — Django content app and migrations
 - `Dockerfile` — multi-stage frontend build and Django/Gunicorn runtime
@@ -19,19 +20,21 @@ cd backend
 python -m venv .venv
 # Windows: .venv\\Scripts\\activate
 # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate --run-syncdb
+python -m pip install -r requirements.txt
+python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Frontend (from repository root, separate terminal):
+For the live-reloading frontend, use a second terminal:
 
 ```bash
-cd frontend
+cd backend/templates
 npm install
 npm run dev
 ```
+
+Open the Vite URL it prints (usually `http://localhost:5173`). If you want Django at `http://127.0.0.1:8000/` to serve the built page instead, run `npm run build` from `backend/templates` first.
 
 ## Deployment
 
