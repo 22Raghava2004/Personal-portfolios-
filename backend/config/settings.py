@@ -32,10 +32,16 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
+        # Supabase's transaction pooler needs short-lived client connections.
+        conn_max_age=0,
         ssl_require=os.getenv("DATABASE_SSL", "false").lower() == "true",
     )
 }
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    # Supabase transaction pooling does not preserve session cursors or
+    # support named prepared statements on its shared pooler.
+    DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+    DATABASES["default"].setdefault("OPTIONS", {})["prepare_threshold"] = None
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
