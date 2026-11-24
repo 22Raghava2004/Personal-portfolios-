@@ -189,7 +189,7 @@ function App() {
     let alive = true;
     setLoading(true);
     setLoadError("");
-    Promise.all([
+    Promise.allSettled([
       apiGet(`/projects/?mode=${mode}`),
       apiGet(`/skills/?mode=${mode}`),
       apiGet(`/posts/?mode=${mode}`),
@@ -197,16 +197,22 @@ function App() {
       apiGet("/site/")
     ]).then(([p, s, po, a, st]) => {
       if (!alive) return;
-      setProjects(Array.isArray(p) ? p : []);
-      setSkills(Array.isArray(s) ? s : []);
-      setPosts(Array.isArray(po) ? po : []);
-      setAbout(a); setSite(st); setLoading(false);
-    }).catch(error => {
-      if (!alive) return;
-      setProjects([]); setSkills([]); setPosts([]); setAbout(null);
-      setLoadError("Portfolio content is not available right now. Please check the backend connection.");
+      const results = [p, s, po, a, st];
+      const [projectsResult, skillsResult, postsResult, aboutResult, siteResult] = results;
+
+      setProjects(projectsResult.status === "fulfilled" && Array.isArray(projectsResult.value) ? projectsResult.value : []);
+      setSkills(skillsResult.status === "fulfilled" && Array.isArray(skillsResult.value) ? skillsResult.value : []);
+      setPosts(postsResult.status === "fulfilled" && Array.isArray(postsResult.value) ? postsResult.value : []);
+      setAbout(aboutResult.status === "fulfilled" ? aboutResult.value : null);
+      setSite(siteResult.status === "fulfilled" ? siteResult.value : null);
+
+      results.forEach((result, index) => {
+        if (result.status === "rejected") console.error(`Portfolio API request ${index + 1} failed:`, result.reason);
+      });
+      setLoadError(results.some(result => result.status === "rejected")
+        ? "Some portfolio content could not be loaded. Check the browser console for details."
+        : "");
       setLoading(false);
-      console.error("Portfolio API:", error);
     });
     return () => { alive = false; };
   }, [mode]);
