@@ -157,7 +157,9 @@ function ProjectCard({ project, index, onOpen }) {
       viewport={{ once: true, amount: 0.15 }} transition={{ ...transition, delay: index * 0.04 }}
       onClick={() => onOpen(project)}>
       <div className="project-media">
-        {project.media_kind === "video" && project.media_url
+        {project.media_kind === "drive" && project.media_url
+          ? <iframe src={project.media_url} title={`${project.title} video`} allow="autoplay; encrypted-media" allowFullScreen/>
+          : project.media_kind === "video" && project.media_url
           ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"
               onClick={event => event.stopPropagation()}/>
           : project.media_url ? <img src={project.media_url} alt={project.title} loading="lazy"/> :
@@ -341,9 +343,11 @@ function App() {
             onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setSelectedProject(null)}><X/></button>
             {selectedProject.media_url && <div className="project-modal-media">
-              {selectedProject.media_kind === "video"
-                ? <video src={selectedProject.media_url} controls autoPlay muted loop playsInline/>
-                : <img src={selectedProject.media_url} alt={selectedProject.title}/>}
+              {selectedProject.media_kind === "drive"
+                ? <iframe src={selectedProject.media_url} title={`${selectedProject.title} video`} allow="autoplay; encrypted-media" allowFullScreen/>
+                : selectedProject.media_kind === "video"
+                  ? <video src={selectedProject.media_url} controls autoPlay muted loop playsInline/>
+                  : <img src={selectedProject.media_url} alt={selectedProject.title}/>}
             </div>}
             <span className="eyebrow">{selectedProject.category}</span>
             <h2>{selectedProject.title}</h2><p>{selectedProject.description}</p>

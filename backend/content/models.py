@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+from urllib.parse import parse_qs, urlsplit
 
 
 class PublishedModel(models.Model):
@@ -24,6 +25,10 @@ class Project(PublishedModel):
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="projects/images/", blank=True)
     video = models.FileField(upload_to="projects/videos/", blank=True)
+    drive_video_url = models.URLField(
+        blank=True,
+        help_text="Google Drive share link. Set General access to Anyone with the link (Viewer).",
+    )
     project_url = models.URLField(blank=True)
 
     class Meta(PublishedModel.Meta):
@@ -31,15 +36,35 @@ class Project(PublishedModel):
 
     def clean(self):
         super().clean()
+        if self.drive_video_url and not self.get_drive_file_id():
+            raise ValidationError({
+                "drive_video_url": "Enter a Google Drive file link such as https://drive.google.com/file/d/FILE_ID/view"
+            })
         if self.mode == self.DEVELOPER:
             if not self.image:
                 raise ValidationError({"image": "Developer projects require one image."})
-            if self.video:
-                raise ValidationError({"video": "Developer projects use an image only."})
+            if self.video or self.drive_video_url:
+                raise ValidationError("Developer projects use an image only.")
         elif self.mode == self.CREATIVE:
-            has_image, has_video = bool(self.image), bool(self.video)
-            if has_image == has_video:
-                raise ValidationError("Creative projects must have either one image or one video.")
+            media_count = sum(bool(value) for value in (self.image, self.video, self.drive_video_url))
+            if media_count != 1:
+                raise ValidationError("Creative projects must have exactly one image, uploaded video, or Google Drive video link.")
+
+    def get_drive_file_id(self):
+        if not self.drive_video_url:
+            return None
+        parts = urlsplit(self.drive_video_url)
+        if parts.scheme != "https" or parts.hostname not in {"drive.google.com", "www.drive.google.com"}:
+            return None
+        path_parts = parts.path.strip("/").split("/")
+        if len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d":
+            return path_parts[2]
+        return parse_qs(parts.query).get("id", [None])[0]
+
+    @property
+    def drive_embed_url(self):
+        file_id = self.get_drive_file_id()
+        return f"https://drive.google.com/file/d/{file_id}/preview" if file_id else None
 
     def __str__(self):
         return f"[{self.mode}] {self.title}"
