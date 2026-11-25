@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  base: mode === 'production' ? '/static/' : '/',
+  base: mode === 'production' && process.env.VERCEL !== '1' ? '/static/' : '/',
   server: {
     proxy: {
       '/api': 'http://127.0.0.1:8000',

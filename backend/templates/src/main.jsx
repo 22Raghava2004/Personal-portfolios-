@@ -8,7 +8,7 @@ import {
 import "./style.css";
 
 const API = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/$/, "");
-const STATIC_MEDIA = import.meta.env.DEV ? "" : "/static";
+const STATIC_MEDIA = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 async function apiGet(path) {
   const response = await fetch(`${API}${path}`, {
