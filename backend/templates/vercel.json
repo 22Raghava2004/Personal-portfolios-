@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/projects/creative", "destination": "/" },
+    { "source": "/projects/developer", "destination": "/" }
+  ]
+}

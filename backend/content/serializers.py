@@ -8,11 +8,13 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ("id", "mode", "title", "media_aspect_ratio", "year", "description", "image", "video", "drive_video_url", "media_url", "media_kind", "project_url", "sort_order")
+        fields = ("id", "mode", "title", "media_aspect_ratio", "year", "description", "image", "video", "drive_video_url", "drive_image_url", "media_url", "media_kind", "project_url", "sort_order")
 
     def get_media_url(self, obj):
         if obj.mode == Project.CREATIVE and obj.drive_video_url:
             return obj.drive_embed_url
+        if obj.drive_image_url:
+            return obj.drive_image_embed_url
         field = obj.video if obj.mode == Project.CREATIVE and obj.video else obj.image
         request = self.context.get("request")
         if not field:
@@ -37,9 +39,11 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ("id", "mode", "title", "category", "body", "cover_image", "cover_image_url", "published_on", "sort_order")
+        fields = ("id", "mode", "title", "body", "cover_image", "cover_image_drive_url", "cover_image_url", "published_on", "sort_order")
 
     def get_cover_image_url(self, obj):
+        if obj.cover_image_drive_url:
+            return obj.drive_cover_image_embed_url
         if not obj.cover_image:
             return None
         request = self.context.get("request")

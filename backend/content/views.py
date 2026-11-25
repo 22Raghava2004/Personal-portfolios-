@@ -20,6 +20,13 @@ class ProjectList(ModeListMixin, generics.ListAPIView):
     model = Project
     serializer_class = ProjectSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        limit = self.request.query_params.get("limit")
+        if limit and limit.isdecimal():
+            return queryset[:min(int(limit), 100)]
+        return queryset
+
 
 class SkillList(ModeListMixin, generics.ListAPIView):
     model = Skill

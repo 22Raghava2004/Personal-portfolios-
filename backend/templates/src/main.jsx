@@ -20,13 +20,22 @@ async function apiGet(path) {
 
 const transition = { duration: 0.42, ease: [0.22, 1, 0.36, 1] };
 
-function Header({ mode, setMode, night, setNight, active, setActive }) {
+function Header({ mode, setMode, night, setNight, active, setActive, isProjectPage, onNavigate }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const links = ["Home", "Work", "Skills", "Posts", "About", "Contact"];
+  const links = isProjectPage ? ["Home", "Work"] : ["Home", "Work", "Skills", "Posts", "About", "Contact"];
 
   function navigate(label) {
     setActive(label);
     setMenuOpen(false);
+    if (isProjectPage && label === "Home") {
+      onNavigate("/");
+      return;
+    }
+    if (isProjectPage && label !== "Work") {
+      onNavigate("/");
+      window.setTimeout(() => document.getElementById(label.toLowerCase())?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+      return;
+    }
     document.getElementById(label.toLowerCase())?.scrollIntoView({
       behavior: "smooth", block: "start"
     });
@@ -35,8 +44,8 @@ function Header({ mode, setMode, night, setNight, active, setActive }) {
   return (
     <header className="site-header">
       <div className="header-top">
-        <a className="wordmark" href="#home" onClick={(e) => {
-          e.preventDefault(); navigate("Home");
+        <a className="wordmark" href="/" onClick={(e) => {
+          e.preventDefault(); onNavigate("/");
         }}>RAGHAVA<span>.</span></a>
 
         <div className="mode-switch" aria-label="Portfolio mode">
@@ -160,7 +169,7 @@ function ProjectCard({ project, index, onOpen }) {
       onClick={() => onOpen(project)}>
       <div className={`project-media ${mediaAspectClass}`}>
         {project.media_kind === "drive" && project.media_url
-          ? <iframe src={project.media_url} title={`${project.title} video`} allow="autoplay; encrypted-media" allowFullScreen/>
+          ? <iframe src={project.media_url} title={`${project.title} video`} loading="lazy" allow="autoplay; encrypted-media" allowFullScreen/>
           : project.media_kind === "video" && project.media_url
           ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"
               onClick={event => event.stopPropagation()}/>
@@ -175,8 +184,68 @@ function ProjectCard({ project, index, onOpen }) {
   );
 }
 
+function HomeProjectCarousel({ projects, onOpen }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  useEffect(() => setCurrentIndex(0), [projects]);
+  if (!projects.length) return null;
+
+  const project = projects[currentIndex] || projects[0];
+  const isPortrait = project.media_aspect_ratio === "9:16";
+  const goTo = (index) => setCurrentIndex((index + projects.length) % projects.length);
+  const mediaLabel = project.media_kind === "drive" ? "GOOGLE DRIVE VIDEO" :
+    project.media_kind === "video" ? "VIDEO" : "IMAGE";
+
+  return (
+    <div className="home-project-carousel">
+      <div className="home-project-media-panel">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={project.id} className={`home-project-stage ${isPortrait ? "portrait" : "landscape"}`}
+            initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.24 }}>
+            <div className="home-project-frame">
+              {project.media_kind === "drive" && project.media_url
+                ? <iframe src={project.media_url} title={`${project.title} video`} loading="lazy" allow="autoplay; encrypted-media" allowFullScreen/>
+                : project.media_kind === "video" && project.media_url
+                  ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"/>
+                  : project.media_url
+                    ? <img src={project.media_url} alt={project.title} loading="lazy"/>
+                    : <div className="media-placeholder"><Sparkles/></div>}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+        <div className="home-project-controls">
+          <button type="button" className="carousel-arrow" onClick={() => goTo(currentIndex - 1)} aria-label="Previous project">←</button>
+          <span>{String(currentIndex + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
+          <button type="button" className="carousel-arrow" onClick={() => goTo(currentIndex + 1)} aria-label="Next project">→</button>
+        </div>
+      </div>
+      <div className="home-project-details">
+        <div>
+          <p className="eyebrow">{project.mode === "creative" ? "CREATIVE" : "DEVELOPER"} · {mediaLabel}</p>
+          <h3>{project.title}</h3>
+          <p className="home-project-description">{project.description || "Explore this selected project."}</p>
+        </div>
+        <div className="home-project-details-bottom">
+          <span>{project.year || ""}</span>
+          <button type="button" className="project-open-link" onClick={() => onOpen(project)}>Details <ArrowUpRight size={16}/></button>
+        </div>
+        <div className="home-project-dots" aria-label="Choose project">
+          {projects.map((item, index) => <button key={item.id} type="button"
+            className={index === currentIndex ? "active" : ""}
+            aria-label={`Show project ${index + 1}: ${item.title}`}
+            aria-current={index === currentIndex ? "true" : undefined}
+            onClick={() => goTo(index)}/>) }
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
-  const [mode, setMode] = useState("creative");
+  const [path, setPath] = useState(window.location.pathname);
+  const isProjectPage = path === "/projects/creative" || path === "/projects/developer";
+  const routeMode = path.endsWith("developer") ? "developer" : "creative";
+  const [mode, setModeState] = useState(routeMode);
   const [night, setNight] = useState(false);
   const [active, setActive] = useState("Home");
   const [projects, setProjects] = useState([]);
@@ -187,11 +256,35 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
 
+  function navigateTo(nextPath) {
+    if (window.location.pathname !== nextPath) window.history.pushState({}, "", nextPath);
+    setPath(nextPath);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function changeMode(nextMode) {
+    setModeState(nextMode);
+    if (nextMode === "creative") setNight(false);
+    if (isProjectPage) navigateTo(`/projects/${nextMode}`);
+  }
+
+  useEffect(() => {
+    const syncPath = () => {
+      const nextPath = window.location.pathname;
+      setPath(nextPath);
+      if (nextPath === "/projects/creative" || nextPath === "/projects/developer") {
+        setModeState(nextPath.endsWith("developer") ? "developer" : "creative");
+      }
+    };
+    window.addEventListener("popstate", syncPath);
+    return () => window.removeEventListener("popstate", syncPath);
+  }, []);
+
   useEffect(() => {
     let alive = true;
     setLoading(true);
     Promise.allSettled([
-      apiGet(`/projects/?mode=${mode}`),
+      apiGet(`/projects/?mode=${mode}${isProjectPage ? "" : "&limit=5"}`),
       apiGet(`/skills/?mode=${mode}`),
       apiGet(`/posts/?mode=${mode}`),
       apiGet(`/about/?mode=${mode}`),
@@ -213,7 +306,7 @@ function App() {
       setLoading(false);
     });
     return () => { alive = false; };
-  }, [mode]);
+  }, [mode, isProjectPage]);
 
   useEffect(() => {
     const sections = ["home", "work", "skills", "posts", "about", "contact"];
@@ -233,10 +326,24 @@ function App() {
   return (
     <div className={`portfolio-page ${mode} ${mode === "developer" ? (night ? "dev-night" : "dev-day") : ""}`}>
       <div className="portfolio-shell">
-        <Header mode={mode} setMode={next => {
-          setMode(next); if (next === "creative") setNight(false);
-        }} night={night} setNight={setNight} active={active} setActive={setActive}/>
+        <Header mode={mode} setMode={changeMode} night={night} setNight={setNight} active={active} setActive={setActive}
+          isProjectPage={isProjectPage} onNavigate={navigateTo}/>
         <main>
+          {isProjectPage ? <section className="content-section projects-page-section" id="work">
+            <div className="section-title">
+              <span className="eyebrow">{mode === "creative" ? "CREATIVE PORTFOLIO" : "DEVELOPER PORTFOLIO"} / ALL PROJECTS</span>
+              <h1>{mode === "creative" ? <>Creative<br/><span>projects.</span></> : <>Developer<br/><span>projects.</span></>}</h1>
+              <p className="projects-page-intro">Browse the complete {mode} project collection.</p>
+            </div>
+            {loading && <p className="empty-state">Loading projects…</p>}
+            {!loading && !projects.length && <p className="empty-state">No projects published yet.</p>}
+            <motion.div layout className="project-grid">
+              <AnimatePresence mode="popLayout">
+                {projects.map((project, index) =>
+                  <ProjectCard key={project.id} project={project} index={index} onOpen={setSelectedProject}/>) }
+              </AnimatePresence>
+            </motion.div>
+          </section> : <>
           <Hero mode={mode} night={night} site={site}/>
 
           <section className="content-section" id="work">
@@ -246,12 +353,10 @@ function App() {
             </div>
             {loading && <p className="empty-state">Loading projects…</p>}
             {!loading && !projects.length && <p className="empty-state">Projects will appear here soon.</p>}
-            <motion.div layout className="project-grid">
-              <AnimatePresence mode="popLayout">
-                {projects.map((project, index) =>
-                  <ProjectCard key={project.id} project={project} index={index} onOpen={setSelectedProject}/>)}
-              </AnimatePresence>
-            </motion.div>
+            <HomeProjectCarousel projects={projects} onOpen={setSelectedProject}/>
+            {projects.length > 0 && <a className="view-all-projects" href={`/projects/${mode}`} onClick={(event) => {
+              event.preventDefault(); navigateTo(`/projects/${mode}`);
+            }}>View all {mode} projects <ArrowUpRight size={17}/></a>}
           </section>
 
           <section className="content-section skills-section" id="skills">
@@ -291,7 +396,7 @@ function App() {
                   initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }} transition={{ ...transition, delay: i * 0.04 }}>
                   {post.cover_image_url && <img src={post.cover_image_url} alt={post.title} loading="lazy"/>}
-                  <div className="eyebrow">{post.category || "UPDATE"} {post.published_on ? `· ${post.published_on}` : ""}</div>
+                  <div className="eyebrow">{post.published_on || "UPDATE"}</div>
                   <h3>{post.title}</h3><p>{post.body}</p>
                 </motion.article>)}
               {!loading && !posts.length && <p className="empty-state">Posts and updates will appear here soon.</p>}
@@ -320,6 +425,7 @@ function App() {
               </div>
             </div>
           </section>
+          </>}
         </main>
       </div>
 

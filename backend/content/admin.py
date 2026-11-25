@@ -19,8 +19,8 @@ class SkillAdmin(admin.ModelAdmin):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ("title", "mode", "category", "published_on", "is_published")
-    list_filter = ("mode", "is_published", "category")
+    list_display = ("title", "mode", "published_on", "is_published")
+    list_filter = ("mode", "is_published")
     search_fields = ("title", "body")
 
 

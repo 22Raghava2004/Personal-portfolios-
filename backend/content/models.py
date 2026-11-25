@@ -3,6 +3,18 @@ from django.db import models
 from urllib.parse import parse_qs, urlsplit
 
 
+def get_google_drive_file_id(url):
+    if not url:
+        return None
+    parts = urlsplit(url)
+    if parts.scheme != "https" or parts.hostname not in {"drive.google.com", "www.drive.google.com"}:
+        return None
+    path_parts = parts.path.strip("/").split("/")
+    if len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d":
+        return path_parts[2]
+    return parse_qs(parts.query).get("id", [None])[0]
+
+
 class PublishedModel(models.Model):
     is_published = models.BooleanField(default=True)
     sort_order = models.PositiveIntegerField(default=0)
@@ -38,6 +50,10 @@ class Project(PublishedModel):
         blank=True,
         help_text="Google Drive share link. Set General access to Anyone with the link (Viewer).",
     )
+    drive_image_url = models.URLField(
+        blank=True,
+        help_text="Optional Google Drive image link. Set General access to Anyone with the link (Viewer).",
+    )
     project_url = models.URLField(blank=True)
 
     class Meta(PublishedModel.Meta):
@@ -49,31 +65,32 @@ class Project(PublishedModel):
             raise ValidationError({
                 "drive_video_url": "Enter a Google Drive file link such as https://drive.google.com/file/d/FILE_ID/view"
             })
+        if self.drive_image_url and not get_google_drive_file_id(self.drive_image_url):
+            raise ValidationError({
+                "drive_image_url": "Enter a Google Drive file link such as https://drive.google.com/file/d/FILE_ID/view"
+            })
         if self.mode == self.DEVELOPER:
-            if not self.image:
-                raise ValidationError({"image": "Developer projects require one image."})
+            if bool(self.image) == bool(self.drive_image_url):
+                raise ValidationError({"image": "Developer projects require exactly one uploaded image or Google Drive image link."})
             if self.video or self.drive_video_url:
                 raise ValidationError("Developer projects use an image only.")
         elif self.mode == self.CREATIVE:
-            media_count = sum(bool(value) for value in (self.image, self.video, self.drive_video_url))
+            media_count = sum(bool(value) for value in (self.image, self.video, self.drive_video_url, self.drive_image_url))
             if media_count != 1:
-                raise ValidationError("Creative projects must have exactly one image, uploaded video, or Google Drive video link.")
+                raise ValidationError("Creative projects must have exactly one uploaded image, uploaded video, Google Drive image link, or Google Drive video link.")
 
     def get_drive_file_id(self):
-        if not self.drive_video_url:
-            return None
-        parts = urlsplit(self.drive_video_url)
-        if parts.scheme != "https" or parts.hostname not in {"drive.google.com", "www.drive.google.com"}:
-            return None
-        path_parts = parts.path.strip("/").split("/")
-        if len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d":
-            return path_parts[2]
-        return parse_qs(parts.query).get("id", [None])[0]
+        return get_google_drive_file_id(self.drive_video_url)
 
     @property
     def drive_embed_url(self):
         file_id = self.get_drive_file_id()
         return f"https://drive.google.com/file/d/{file_id}/preview" if file_id else None
+
+    @property
+    def drive_image_embed_url(self):
+        file_id = get_google_drive_file_id(self.drive_image_url)
+        return f"https://drive.google.com/thumbnail?id={file_id}&sz=w1600" if file_id else None
 
     def __str__(self):
         return f"[{self.mode}] {self.title}"
@@ -97,10 +114,44 @@ class Skill(PublishedModel):
 class Post(PublishedModel):
     mode = models.CharField(max_length=12, choices=Project.MODE_CHOICES)
     title = models.CharField(max_length=180)
-    category = models.CharField(max_length=80, blank=True)
     body = models.TextField()
     cover_image = models.ImageField(upload_to="posts/", blank=True)
+    cover_image_drive_url = models.URLField(
+        blank=True,
+        help_text="Optional Google Drive image link. Set General access to Anyone with the link (Viewer).",
+    )
     published_on = models.DateField(null=True, blank=True)
+
+    def clean(self):
+        super().clean()
+        if self.cover_image_drive_url:
+            parts = urlsplit(self.cover_image_drive_url)
+            path_parts = parts.path.strip("/").split("/")
+            has_file_id = (
+                parts.scheme == "https"
+                and parts.hostname in {"drive.google.com", "www.drive.google.com"}
+                and ((len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d" and path_parts[2])
+                     or (path_parts[0] == "open" and parse_qs(parts.query).get("id", [None])[0]))
+            )
+            if not has_file_id:
+                raise ValidationError({
+                    "cover_image_drive_url": "Enter a Google Drive share link such as https://drive.google.com/file/d/FILE_ID/view"
+                })
+        if self.cover_image and self.cover_image_drive_url:
+            raise ValidationError("Use either an uploaded cover image or a Google Drive link, not both.")
+
+    @property
+    def drive_cover_image_embed_url(self):
+        if not self.cover_image_drive_url:
+            return None
+        parts = urlsplit(self.cover_image_drive_url)
+        path_parts = parts.path.strip("/").split("/")
+        file_id = (
+            path_parts[2]
+            if len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d"
+            else parse_qs(parts.query).get("id", [None])[0]
+        )
+        return f"https://drive.google.com/thumbnail?id={file_id}&sz=w1600" if file_id else None
 
     def __str__(self):
         return f"[{self.mode}] {self.title}"
