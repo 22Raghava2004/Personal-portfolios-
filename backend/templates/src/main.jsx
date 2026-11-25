@@ -151,14 +151,14 @@ function Hero({ mode, night, site }) {
 }
 
 function ProjectCard({ project, index, onOpen }) {
-  const mediaAspectRatio = project.media_aspect_ratio === "9:16" ? "9 / 16" : "16 / 9";
+  const mediaAspectClass = project.media_aspect_ratio === "9:16" ? "portrait" : "landscape";
 
   return (
     <motion.article className="project-card" layout
       initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }} transition={{ ...transition, delay: index * 0.04 }}
       onClick={() => onOpen(project)}>
-      <div className="project-media" style={{ aspectRatio: mediaAspectRatio }}>
+      <div className={`project-media ${mediaAspectClass}`}>
         {project.media_kind === "drive" && project.media_url
           ? <iframe src={project.media_url} title={`${project.title} video`} allow="autoplay; encrypted-media" allowFullScreen/>
           : project.media_kind === "video" && project.media_url
@@ -331,7 +331,7 @@ function App() {
             <button className="modal-close" onClick={() => setSelectedProject(null)}><X/></button>
             {selectedProject.media_url && <div
               className={`project-modal-media ${selectedProject.media_aspect_ratio === "9:16" ? "portrait" : "landscape"}`}
-              style={{ aspectRatio: selectedProject.media_aspect_ratio === "9:16" ? "9 / 16" : "16 / 9" }}>
+            >
               {selectedProject.media_kind === "drive"
                 ? <iframe src={selectedProject.media_url} title={`${selectedProject.title} video`} allow="autoplay; encrypted-media" allowFullScreen/>
                 : selectedProject.media_kind === "video"
