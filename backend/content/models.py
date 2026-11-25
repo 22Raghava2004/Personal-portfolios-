@@ -18,8 +18,18 @@ class Project(PublishedModel):
     CREATIVE = "creative"
     DEVELOPER = "developer"
     MODE_CHOICES = [(CREATIVE, "Creative"), (DEVELOPER, "Developer")]
+    MEDIA_ASPECT_RATIO_CHOICES = [
+        ("16:9", "Landscape video (16:9)"),
+        ("9:16", "Portrait / Shorts video (9:16)"),
+    ]
     mode = models.CharField(max_length=12, choices=MODE_CHOICES)
     title = models.CharField(max_length=160)
+    media_aspect_ratio = models.CharField(
+        max_length=5,
+        choices=MEDIA_ASPECT_RATIO_CHOICES,
+        default="16:9",
+        help_text="Choose the shape that matches this project's media.",
+    )
     year = models.CharField(max_length=12, blank=True)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="projects/images/", blank=True)
