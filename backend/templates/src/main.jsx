@@ -204,7 +204,7 @@ function HomeProjectCarousel({ projects, onOpen }) {
             transition={{ duration: 0.24 }}>
             <div className="home-project-frame">
               {project.media_kind === "drive" && project.media_url
-                ? <iframe src={project.media_url} title={`${project.title} video`} loading="lazy" allow="autoplay; encrypted-media" allowFullScreen/>
+                ? <iframe className="home-drive-embed" src={project.media_url} title={`${project.title} video`} loading="lazy" allow="autoplay; encrypted-media" allowFullScreen/>
                 : project.media_kind === "video" && project.media_url
                   ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"/>
                   : project.media_url
