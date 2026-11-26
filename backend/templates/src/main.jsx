@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowDown, ArrowUpRight, Github, Instagram, Linkedin, Menu, X,
-  Sun, Moon, Sparkles, Code2
+  Sun, Moon, Sparkles, Code2, Play
 } from "lucide-react";
 import "./style.css";
 
@@ -159,29 +159,53 @@ function Hero({ mode, night, site }) {
   );
 }
 
+function getProjectPreviewUrl(project) {
+  if (project.media_kind !== "drive") return project.media_url;
+  const source = project.drive_video_url || project.media_url || "";
+  const driveFileId = source.match(/\/file\/d\/([^/?]+)/)?.[1]
+    || source.match(/[?&]id=([^&]+)/)?.[1];
+  return driveFileId
+    ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(driveFileId)}&sz=w1200`
+    : null;
+}
+
+function ProjectMediaPreview({ project, onOpen, className = "" }) {
+  const isVideo = project.media_kind === "drive" || project.media_kind === "video";
+  const previewUrl = getProjectPreviewUrl(project);
+
+  return (
+    <button type="button" className={`project-media-open ${className}`} onClick={() => onOpen(project)}
+      aria-label={`${isVideo ? "Play" : "View"} ${project.title} in details`}>
+      {project.media_kind === "video" && project.media_url
+        ? <video src={project.media_url} muted playsInline preload="metadata"/>
+        : previewUrl
+          ? <img src={previewUrl} alt={`${project.title} preview`} loading="lazy"
+              onError={event => { event.currentTarget.style.display = "none"; }}/>
+          : <div className="media-placeholder"><Sparkles/></div>}
+      <span className="project-media-play">
+        {isVideo && <Play size={18} fill="currentColor"/>}
+        {isVideo ? "Play in details" : "View details"}
+      </span>
+    </button>
+  );
+}
+
 function ProjectCard({ project, index, onOpen }) {
   const mediaAspectClass = project.media_aspect_ratio === "9:16" ? "portrait" : "landscape";
 
   return (
     <motion.article className="project-card" layout
       initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }} transition={{ ...transition, delay: index * 0.04 }}
-      onClick={() => onOpen(project)}>
+      viewport={{ once: true, amount: 0.15 }} transition={{ ...transition, delay: index * 0.04 }}>
       <div className={`project-media ${mediaAspectClass}`}>
-        {project.media_kind === "drive" && project.media_url
-          ? <iframe src={project.media_url} title={`${project.title} video`} loading="lazy" allow="autoplay; encrypted-media" allowFullScreen/>
-          : project.media_kind === "video" && project.media_url
-          ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"
-              onClick={event => event.stopPropagation()}/>
-          : project.media_url ? <img src={project.media_url} alt={project.title} loading="lazy"/> :
-          <div className="media-placeholder"><Sparkles/></div>}
+        <ProjectMediaPreview project={project} onOpen={onOpen}/>
       </div>
       <div className="project-info">
         <div className="project-info-copy">
           <h3>{project.title}</h3>
           {project.description && <p className="project-card-description">{project.description}</p>}
         </div>
-        <span className="project-year">{project.year || ""}<ArrowUpRight size={17}/></span>
+        {project.year && <span className="project-year">{project.year}</span>}
       </div>
     </motion.article>
   );
@@ -206,13 +230,7 @@ function HomeProjectCarousel({ projects, onOpen }) {
             initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.24 }}>
             <div className="home-project-frame">
-              {project.media_kind === "drive" && project.media_url
-                ? <iframe className="home-drive-embed" src={project.media_url} title={`${project.title} video`} loading="lazy" allow="autoplay; encrypted-media" allowFullScreen/>
-                : project.media_kind === "video" && project.media_url
-                  ? <video src={project.media_url} muted loop playsInline controls autoPlay preload="metadata"/>
-                  : project.media_url
-                    ? <img src={project.media_url} alt={project.title} loading="lazy"/>
-                    : <div className="media-placeholder"><Sparkles/></div>}
+              <ProjectMediaPreview project={project} onOpen={onOpen} className="home-project-open"/>
             </div>
           </motion.div>
         </AnimatePresence>
@@ -230,7 +248,6 @@ function HomeProjectCarousel({ projects, onOpen }) {
         </div>
         <div className="home-project-details-bottom">
           <span>{project.year || ""}</span>
-          <button type="button" className="project-open-link" onClick={() => onOpen(project)}>Details <ArrowUpRight size={16}/></button>
         </div>
         <div className="home-project-dots" aria-label="Choose project">
           {projects.map((item, index) => <button key={item.id} type="button"
