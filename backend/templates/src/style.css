@@ -81,7 +81,9 @@ a { color: inherit; text-decoration: none; }
 .project-media img, .project-media video, .project-media iframe { display: block; width: 100%; height: 100%; object-fit: contain; border: 0; }
 .media-placeholder { height: 100%; display: grid; place-items: center; color: var(--purple); }
 .project-info { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 17px 8px 9px; }
+.project-info-copy { min-width: 0; }
 .project-info h3, .post-card h3 { font-size: 21px; margin: 6px 0 0; color: var(--ink); }
+.project-card-description { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; white-space: pre-line; }
 .project-year { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .home-project-carousel { display: grid; grid-template-columns: minmax(0, 1fr) 260px; overflow: hidden; border: 1px solid var(--line); border-radius: 20px; background: var(--paper); }
 .home-project-media-panel { min-width: 0; padding: 20px; background: linear-gradient(140deg,rgba(145,77,243,.08),rgba(217,231,249,.55)); }
@@ -126,9 +128,9 @@ a { color: inherit; text-decoration: none; }
 .view-all-projects:hover { background: rgba(145,77,243,.07); transform: translateY(-2px); }
 .projects-page-section { min-height: 70vh; padding-top: 42px; }
 .projects-page-section .section-title { margin-top: 42px; }
-.projects-page-section .project-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); justify-items: center; gap: 18px; }
-.projects-page-section .project-card { width: 100%; max-width: 300px; }
-.projects-page-section .project-media.portrait { width: min(100%, 200px); margin-inline: auto; }
+.projects-page-section .project-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); justify-items: center; gap: 24px; }
+.projects-page-section .project-card { width: 100%; max-width: 460px; }
+.projects-page-section .project-media.portrait { width: min(100%, 360px); margin-inline: auto; }
 .projects-page-section h1 { font: 700 clamp(44px,8vw,82px)/.98 'Space Grotesk',sans-serif; letter-spacing: -.06em; margin: 15px 0 0; color: var(--ink); }
 .projects-page-section h1 span { color: #8a849b; }
 .projects-page-intro { margin: 20px 0 0; color: var(--muted); font-size: 17px; }
@@ -148,10 +150,10 @@ a { color: inherit; text-decoration: none; }
 .social-links a { color: var(--muted); }
 .social-links svg { width: 18px; height: 18px; }
 .modal-overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: rgba(15,10,25,.6); backdrop-filter: blur(8px); }
-.project-modal { position: relative; width: min(540px,100%); padding: 34px; border-radius: 24px; background: var(--paper); color: var(--ink); }
-.project-modal-media { width: 100%; max-height: 62vh; aspect-ratio: 16 / 9; margin: 0 0 22px; overflow: hidden; border-radius: 14px; background: #17131f; }
+.project-modal { position: relative; width: min(1200px,100%); max-height: calc(100dvh - 24px); overflow-y: auto; padding: 34px; border-radius: 24px; background: var(--paper); color: var(--ink); }
+.project-modal-media { width: 100%; max-height: 90vh; aspect-ratio: 16 / 9; margin: 0 0 22px; overflow: hidden; border-radius: 14px; background: #17131f; }
 .project-modal-media.landscape { aspect-ratio: 16 / 9; }
-.project-modal-media.portrait { width: min(100%, calc(62vh * 9 / 16)); aspect-ratio: 9 / 16; margin-left: auto; margin-right: auto; }
+.project-modal-media.portrait { width: min(100%, calc(90vh * 9 / 16)); aspect-ratio: 9 / 16; margin-left: auto; margin-right: auto; }
 .project-modal-media img, .project-modal-media video, .project-modal-media iframe { display: block; width: 100%; height: 100%; object-fit: contain; border: 0; }
 .project-modal h2 { font: 700 32px 'Space Grotesk',sans-serif; }
 .project-modal p { color: var(--muted); line-height: 1.7; }
@@ -159,6 +161,8 @@ a { color: inherit; text-decoration: none; }
 .modal-close { position: absolute; right: 16px; top: 16px; border: 0; background: transparent; color: var(--ink); }
 .api-toast { position: fixed; z-index: 30; left: 50%; bottom: 20px; transform: translateX(-50%); width: min(620px,calc(100% - 28px)); padding: 14px 18px; color: white; background: #551b31; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.18); font-size: 14px; }
 @media (max-width: 700px) {
+  .modal-overlay { padding: 10px; }
+  .project-modal { padding: 24px 16px; }
   .portfolio-page { padding: 10px 8px 38px; }
   .portfolio-shell { padding: 0 16px; border-radius: 22px; }
   .site-header { padding: 20px 0 15px; }

@@ -177,7 +177,10 @@ function ProjectCard({ project, index, onOpen }) {
           <div className="media-placeholder"><Sparkles/></div>}
       </div>
       <div className="project-info">
-        <div><h3>{project.title}</h3></div>
+        <div className="project-info-copy">
+          <h3>{project.title}</h3>
+          {project.description && <p className="project-card-description">{project.description}</p>}
+        </div>
         <span className="project-year">{project.year || ""}<ArrowUpRight size={17}/></span>
       </div>
     </motion.article>
